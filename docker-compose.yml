@@ -1,0 +1,26 @@
+services:
+  openssh-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.openssh10
+    container_name: mlkem-openssh-server
+    ports:
+      - "2222:2222"
+    command: /usr/local/sbin/sshd -D -e -f /usr/local/etc/sshd_config # starts openssh server
+    networks:
+      - mlkem-test
+
+  ssh2js-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.openssh10
+    container_name: mlkem-ssh2js-test
+    depends_on:
+      - openssh-server
+    networks:
+      - mlkem-test
+    command: tail -f /dev/null # throw input away
+
+networks:
+  mlkem-test:
+    driver: bridge

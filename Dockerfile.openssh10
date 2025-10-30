@@ -1,0 +1,60 @@
+FROM ubuntu:24.04
+
+# install os dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libssl-dev \
+    zlib1g-dev \
+    wget \
+    curl \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# install nodejs 24
+RUN curl -fsSL https://deb.nodesource.com/setup_24.x | bash - \
+    && apt-get install -y nodejs
+
+# build openssh
+WORKDIR /tmp
+RUN wget https://cdn.openbsd.org/pub/OpenBSD/OpenSSH/portable/openssh-10.1p1.tar.gz \
+    && tar -xzf openssh-10.1p1.tar.gz \
+    && cd openssh-10.1p1 \
+    && ./configure --prefix=/usr/local \
+    && make \
+    && make install
+
+# create sshd privilege group 
+RUN groupadd -r sshd && useradd -r -g sshd -s /usr/sbin/nologin -d /var/empty/sshd -c "sshd privsep" sshd \
+    && mkdir -p /var/empty/sshd \
+    && chmod 755 /var/empty/sshd
+
+# create test user
+RUN useradd -m -s /bin/bash testuser \
+    && echo 'testuser:testpass' | chpasswd
+
+# generate host keys
+RUN mkdir -p /usr/local/etc \
+    && /usr/local/bin/ssh-keygen -A -f /usr/local
+
+# configure sshd
+RUN mkdir -p /usr/local/etc \
+    && echo "Port 2222" > /usr/local/etc/sshd_config \
+    && echo "PermitRootLogin no" >> /usr/local/etc/sshd_config \
+    && echo "PasswordAuthentication yes" >> /usr/local/etc/sshd_config \
+    && echo "PubkeyAuthentication yes" >> /usr/local/etc/sshd_config \
+    && echo "KexAlgorithms mlkem768x25519-sha256,curve25519-sha256" >> /usr/local/etc/sshd_config \
+    && echo "LogLevel DEBUG3" >> /usr/local/etc/sshd_config
+
+# install node dependencies
+WORKDIR /app
+COPY . .
+RUN npm install
+
+
+# openssh server port
+EXPOSE 2222
+
+# ssh2.js server port
+EXPOSE 2223
+
+CMD ["/bin/bash"]
