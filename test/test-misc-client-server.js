@@ -25,7 +25,11 @@ const {
   setupSimple,
 } = require('./common.js');
 
-const { mlkemSupported } = require('../lib/protocol/constants.js');
+const {
+  mlkemSupported,
+  mldsaSupported,
+} = require('../lib/protocol/constants.js');
+const { createHybridKey } = require('../lib/protocol/keyParser.js');
 
 const KEY_RSA_BAD = fixture('bad_rsa_private_key');
 const HOST_RSA_MD5 = '64254520742d3d0792e918f3ce945a64';
@@ -1620,5 +1624,122 @@ if (mlkemSupported) {
     client.on('ready', mustNotCall())
       .on('error', mustCall(onError))
       .on('close', mustCall(() => { }));
+  }
+}
+
+if (mldsaSupported) {
+  {
+    // Generate a hybrid key pair used by both client and server in this test.
+    const { generateKeyPairSync } = require('crypto');
+    const edKeys    = generateKeyPairSync('ed25519');
+    const mldsaKeys = generateKeyPairSync('ml-dsa-65');
+    const hybridKey = createHybridKey(edKeys, mldsaKeys);
+
+    const { client, server } = setup_(
+      'should authenticate with ssh-ed25519-ml-dsa-65 hybrid key',
+      {
+        client: {
+          username: 'foo',
+          privateKey: hybridKey,
+        },
+        server: serverCfg,
+      },
+    );
+
+    const execCommand = 'echo "hello, world!"';
+    const successfulExit = 0;
+
+    server.on('connection', mustCall((conn) => {
+      conn.on('authentication', mustCall((ctx) => {
+        if (ctx.method !== 'publickey')
+          return ctx.reject();
+
+        assert.strictEqual(
+          ctx.key.algo,
+          'ssh-ed25519-ml-dsa-65',
+          `Wrong key algorithm: ${ctx.key.algo}`
+        );
+
+        if (!ctx.signature) {
+          // Probe: check if the public key is recognised
+          const clientPub = ctx.key.data;
+          const serverPub = hybridKey.getPublicSSH();
+          if (clientPub.equals(serverPub))
+            return ctx.accept();
+          return ctx.reject();
+        }
+
+        // Full request: verify the hybrid signature
+        const parsedKey = createHybridKey(edKeys, mldsaKeys);
+        const verified = parsedKey.verify(ctx.blob, ctx.signature);
+        assert(verified === true, 'Hybrid signature verification failed');
+        ctx.accept();
+
+      // 3 calls: 'none' auth rejected + probe accepted + full request accepted
+      }, 3)).on('ready', mustCall(() => {
+        conn.on('session', mustCall((accept) => {
+          const session = accept();
+          session.on('exec', mustCall((accept, reject, info) => {
+            assert.strictEqual(
+              info.command,
+              execCommand,
+              `Wrong exec command: ${info.command}`
+            );
+            const stream = accept();
+            stream.exit(successfulExit);
+            stream.end();
+          }));
+        }));
+      }));
+    }));
+
+    client.on('ready', mustCall(() => {
+      client.exec(execCommand, mustCall((err, stream) => {
+        assert(!err, `Unexpected exec error: ${err}`);
+        stream.on('exit', mustCall((code) => {
+          assert.strictEqual(code, successfulExit, `Wrong exit code: ${code}`);
+          client.end();
+        })).resume();
+      }));
+    }));
+  }
+
+  {
+    // Verify that authentication fails when the server rejects the hybrid key
+    // (e.g. the key is not in the authorized keys list).
+    const { generateKeyPairSync } = require('crypto');
+    const hybridKey = createHybridKey(
+      generateKeyPairSync('ed25519'),
+      generateKeyPairSync('ml-dsa-65')
+    );
+
+    const { client, server } = setup_(
+      'should fail hybrid key auth when server rejects the key',
+      {
+        client: {
+          username: 'foo',
+          privateKey: hybridKey,
+        },
+        server: serverCfg,
+
+        noForceClientReady: true,
+        noForceServerReady: true,
+      },
+    );
+
+    client.removeAllListeners('error');
+
+    server.on('connection', mustCall((conn) => {
+      // Called for 'none' auth and for publickey probe — always reject
+      conn.on('authentication', mustCallAtLeast((ctx) => {
+        ctx.reject();
+      })).on('ready', mustNotCall()).on('close', mustCall(() => {}));
+    }));
+
+    client.on('ready', mustNotCall())
+      .on('error', mustCall((err) => {
+        assert(/all configured/i.test(err.message), `Wrong error: ${err.message}`);
+      }))
+      .on('close', mustCall(() => {}));
   }
 }
