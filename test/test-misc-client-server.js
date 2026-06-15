@@ -34,7 +34,7 @@ const { createHybridKey } = require('../lib/protocol/keyParser.js');
 const KEY_RSA_BAD = fixture('bad_rsa_private_key');
 const HOST_RSA_MD5 = '64254520742d3d0792e918f3ce945a64';
 const clientCfg = { username: 'foo', password: 'bar' };
-const serverCfg = { hostKeys: [ fixture('ssh_host_rsa_key') ] };
+const serverCfg = { hostKeys: [fixture('ssh_host_rsa_key')] };
 
 const debug = false;
 
@@ -141,20 +141,20 @@ const setup = setupSimple.bind(undefined, debug);
 
   client.removeAllListeners('error');
   client.on('ready', mustNotCall())
-        .on('error', mustCall((err) => {
-    assert(/verification failed/.test(err.message),
-           'Wrong client error message');
-  }));
+    .on('error', mustCall((err) => {
+      assert(/verification failed/.test(err.message),
+        'Wrong client error message');
+    }));
 
   server.on('connection', mustCall((conn) => {
     conn.removeAllListeners('error');
 
     conn.on('authentication', mustNotCall())
-        .on('ready', mustNotCall())
-        .on('error', mustCall((err) => {
-      assert(/KEY_EXCHANGE_FAILED/.test(err.message),
-             'Wrong server error message');
-    }));
+      .on('ready', mustNotCall())
+      .on('error', mustCall((err) => {
+        assert(/KEY_EXCHANGE_FAILED/.test(err.message),
+          'Wrong server error message');
+      }));
   }));
 }
 
@@ -177,8 +177,8 @@ const setup = setupSimple.bind(undefined, debug);
       server.close();
     conn.on('authentication', mustCall((ctx) => {
       ctx.accept();
-    })).on('ready', mustCall(() => {}));
-  }, 2)).on('close', mustCall(() => {}));
+    })).on('ready', mustCall(() => { }));
+  }, 2)).on('close', mustCall(() => { }));
 
   let reconnect = false;
   client.on('ready', mustCall(() => {
@@ -188,7 +188,7 @@ const setup = setupSimple.bind(undefined, debug);
       reconnect = true;
       client.connect(clientCfg_);
     }
-  }, 2)).on('close', mustCall(() => {}, 2));
+  }, 2)).on('close', mustCall(() => { }, 2));
 }
 
 {
@@ -210,14 +210,14 @@ const setup = setupSimple.bind(undefined, debug);
   );
 
   server.on('connection', mustCall((conn) => {
-    conn.on('session', mustCall(() => {}, 3));
+    conn.on('session', mustCall(() => { }, 3));
   }));
 
   client.on('ready', mustCall(() => {
     function callback(err, stream) {
       assert(err, 'Expected error');
       assert(err.message === 'No response from server',
-             `Wrong error message: ${err.message}`);
+        `Wrong error message: ${err.message}`);
     }
     client.exec('uptime', mustCall(callback));
     client.shell(mustCall(callback));
@@ -338,7 +338,7 @@ const setup = setupSimple.bind(undefined, debug);
   server.on('connection', mustCall((conn) => {
     conn.on('authentication', mustCall((ctx) => {
       ctx.accept();
-    })).on('ready', mustCall(() => {}));
+    })).on('ready', mustCall(() => { }));
   }));
   client.on('ready', mustCall(() => {
     client.end();
@@ -363,20 +363,20 @@ const setup = setupSimple.bind(undefined, debug);
         );
         accept(assignedPort);
         conn.forwardOut(info.bindAddr,
-                        assignedPort,
-                        'remote',
-                        12345,
-                        mustCall((err, ch) => {
-          assert(!err, `Unexpected error: ${err}`);
-          conn.forwardOut('bad',
-                          assignedPort,
-                          'remote',
-                          12345,
-                          mustCall((err, ch) => {
-            assert(err, 'Should receive error');
-            client.end();
+          assignedPort,
+          'remote',
+          12345,
+          mustCall((err, ch) => {
+            assert(!err, `Unexpected error: ${err}`);
+            conn.forwardOut('bad',
+              assignedPort,
+              'remote',
+              12345,
+              mustCall((err, ch) => {
+                assert(err, 'Should receive error');
+                client.end();
+              }));
           }));
-        }));
       }));
     }));
   }));
@@ -390,7 +390,8 @@ const setup = setupSimple.bind(undefined, debug);
   })).on('tcp connection', mustCall((details, accept, reject) => {
     assert.deepStrictEqual(
       details,
-      { destIP: 'good',
+      {
+        destIP: 'good',
         destPort: assignedPort,
         srcIP: 'remote',
         srcPort: 12345
@@ -419,20 +420,20 @@ const setup = setupSimple.bind(undefined, debug);
         );
         accept(assignedPort);
         conn.forwardOut(info.bindAddr,
-                        assignedPort,
-                        'remote',
-                        12345,
-                        mustCall((err, ch) => {
-          assert(!err, `Unexpected error: ${err}`);
-          conn.forwardOut(info.bindAddr,
-                          99999,
-                          'remote',
-                          12345,
-                          mustCall((err, ch) => {
-            assert(err, 'Should receive error');
-            client.end();
+          assignedPort,
+          'remote',
+          12345,
+          mustCall((err, ch) => {
+            assert(!err, `Unexpected error: ${err}`);
+            conn.forwardOut(info.bindAddr,
+              99999,
+              'remote',
+              12345,
+              mustCall((err, ch) => {
+                assert(err, 'Should receive error');
+                client.end();
+              }));
           }));
-        }));
       }));
     }));
   }));
@@ -446,7 +447,8 @@ const setup = setupSimple.bind(undefined, debug);
   })).on('tcp connection', mustCall((details, accept, reject) => {
     assert.deepStrictEqual(
       details,
-      { destIP: 'good',
+      {
+        destIP: 'good',
         destPort: assignedPort,
         srcIP: 'remote',
         srcPort: 12345
@@ -532,13 +534,13 @@ const setup = setupSimple.bind(undefined, debug);
       assert(/bad packet length/i.test(err.message), 'Wrong error message');
     }));
     conn.on('handshake', mustNotCall())
-        .on('authentication', mustNotCall())
-        .on('ready', mustNotCall());
+      .on('authentication', mustNotCall())
+      .on('ready', mustNotCall());
   }));
 
   client.on('greeting', mustNotCall())
-        .on('banner', mustNotCall())
-        .on('ready', mustNotCall());
+    .on('banner', mustNotCall())
+    .on('ready', mustNotCall());
 }
 
 {
@@ -578,11 +580,11 @@ const setup = setupSimple.bind(undefined, debug);
   }));
 
   client.on('greeting', mustNotCall())
-        .on('banner', mustCall((message) => {
-    assert.strictEqual(message, 'Hello world!\r\n');
-    sawBanner = true;
-    authCb('password');
-  }));
+    .on('banner', mustCall((message) => {
+      assert.strictEqual(message, 'Hello world!\r\n');
+      sawBanner = true;
+      authCb('password');
+    }));
 }
 
 {
@@ -644,7 +646,7 @@ const setup = setupSimple.bind(undefined, debug);
           assert(info.name === 'netconf', `Wrong subsystem name: ${info.name}`);
 
           // XXX: hack to prevent success reply from being sent
-          conn._protocol.channelSuccess = () => {};
+          conn._protocol.channelSuccess = () => { };
 
           accept().close();
         }));
@@ -666,11 +668,11 @@ const setup = setupSimple.bind(undefined, debug);
     {
       client: {
         ...clientCfg,
-        algorithms: { cipher: [ 'aes128-cbc' ] },
+        algorithms: { cipher: ['aes128-cbc'] },
       },
       server: {
         ...serverCfg,
-        algorithms: { cipher: [ 'aes128-ctr' ] },
+        algorithms: { cipher: ['aes128-ctr'] },
       },
 
       noForceClientReady: true,
@@ -689,15 +691,15 @@ const setup = setupSimple.bind(undefined, debug);
     conn.removeAllListeners('error');
 
     conn.on('authentication', mustNotCall())
-        .on('ready', mustNotCall())
-        .on('handshake', mustNotCall())
-        .on('error', mustCall(onError))
-        .on('close', mustCall(() => {}));
+      .on('ready', mustNotCall())
+      .on('handshake', mustNotCall())
+      .on('error', mustCall(onError))
+      .on('close', mustCall(() => { }));
   }));
 
   client.on('ready', mustNotCall())
-        .on('error', mustCall(onError))
-        .on('close', mustCall(() => {}));
+    .on('error', mustCall(onError))
+    .on('close', mustCall(() => { }));
 }
 
 {
@@ -727,11 +729,11 @@ const setup = setupSimple.bind(undefined, debug);
           return ctx.reject();
         case 2:
           assert(ctx.method === 'publickey',
-                 `Wrong auth method: ${ctx.method}`);
+            `Wrong auth method: ${ctx.method}`);
           ctx.accept();
           break;
       }
-    }, 2)).on('ready', mustNotCall()).on('close', mustCall(() => {}));
+    }, 2)).on('ready', mustNotCall()).on('close', mustCall(() => { }));
   }));
 
   let cliError;
@@ -742,7 +744,7 @@ const setup = setupSimple.bind(undefined, debug);
       cliError = err;
       assert(/signing/i.test(err.message), 'Wrong error message');
     }
-  }, 2)).on('close', mustCall(() => {}));
+  }, 2)).on('close', mustCall(() => { }));
 }
 
 {
@@ -764,15 +766,15 @@ const setup = setupSimple.bind(undefined, debug);
 
     conn.on('error', mustCall((err) => {
       assert(/signature generation failed/i.test(err.message),
-             'Wrong error message');
+        'Wrong error message');
     })).on('authentication', mustNotCall())
-       .on('ready', mustNotCall())
-       .on('close', mustCall(() => {}));
+      .on('ready', mustNotCall())
+      .on('close', mustCall(() => { }));
   }));
 
   client.on('ready', mustNotCall()).on('error', mustCall((err) => {
     assert(/KEY_EXCHANGE_FAILED/.test(err.message), 'Wrong error message');
-  })).on('close', mustCall(() => {}));
+  })).on('close', mustCall(() => { }));
 }
 
 {
@@ -781,11 +783,11 @@ const setup = setupSimple.bind(undefined, debug);
     {
       client: {
         ...clientCfg,
-        algorithms: { cipher: [ 'aes128-gcm@openssh.com' ] },
+        algorithms: { cipher: ['aes128-gcm@openssh.com'] },
       },
       server: {
         ...serverCfg,
-        algorithms: { cipher: [ 'aes128-gcm@openssh.com' ] },
+        algorithms: { cipher: ['aes128-gcm@openssh.com'] },
       },
     },
   );
@@ -834,11 +836,11 @@ const setup = setupSimple.bind(undefined, debug);
     {
       client: {
         ...clientCfg,
-        algorithms: { compress: [ 'none' ] },
+        algorithms: { compress: ['none'] },
       },
       server: {
         ...serverCfg,
-        algorithms: { compress: [ 'none', 'zlib@openssh.com' ] },
+        algorithms: { compress: ['none', 'zlib@openssh.com'] },
       },
     },
   );
@@ -852,18 +854,18 @@ const setup = setupSimple.bind(undefined, debug);
         if (reqs.length === 0) {
           // XXX: hack to change algorithms after initial handshake
           client._protocol._offer = new KexInit({
-            kex: [ 'ecdh-sha2-nistp256' ],
-            serverHostKey: [ 'rsa-sha2-256' ],
+            kex: ['ecdh-sha2-nistp256'],
+            serverHostKey: ['rsa-sha2-256'],
             cs: {
-              cipher: [ 'aes128-gcm@openssh.com' ],
+              cipher: ['aes128-gcm@openssh.com'],
               mac: [],
-              compress: [ 'zlib@openssh.com' ],
+              compress: ['zlib@openssh.com'],
               lang: [],
             },
             sc: {
-              cipher: [ 'aes128-gcm@openssh.com' ],
+              cipher: ['aes128-gcm@openssh.com'],
               mac: [],
-              compress: [ 'zlib@openssh.com' ],
+              compress: ['zlib@openssh.com'],
               lang: [],
             },
           });
@@ -894,9 +896,9 @@ const setup = setupSimple.bind(undefined, debug);
         break;
       case 2:
         assert(info.cs.compress === 'zlib@openssh.com',
-               'wrong compress value');
+          'wrong compress value');
         assert(info.sc.compress === 'zlib@openssh.com',
-               'wrong compress value');
+          'wrong compress value');
         break;
     }
   }, 2)).on('ready', mustCall(() => {
@@ -919,11 +921,11 @@ const setup = setupSimple.bind(undefined, debug);
     {
       client: {
         ...clientCfg,
-        algorithms: { compress: [ 'zlib' ] },
+        algorithms: { compress: ['zlib'] },
       },
       server: {
         ...serverCfg,
-        algorithms: { compress: [ 'zlib', 'none' ] },
+        algorithms: { compress: ['zlib', 'none'] },
       }
     },
   );
@@ -937,18 +939,18 @@ const setup = setupSimple.bind(undefined, debug);
         if (reqs.length === 0) {
           // XXX: hack to change algorithms after initial handshake
           client._protocol._offer = new KexInit({
-            kex: [ 'ecdh-sha2-nistp256' ],
-            serverHostKey: [ 'rsa-sha2-256' ],
+            kex: ['ecdh-sha2-nistp256'],
+            serverHostKey: ['rsa-sha2-256'],
             cs: {
-              cipher: [ 'aes128-gcm@openssh.com' ],
+              cipher: ['aes128-gcm@openssh.com'],
               mac: [],
-              compress: [ 'none' ],
+              compress: ['none'],
               lang: [],
             },
             sc: {
-              cipher: [ 'aes128-gcm@openssh.com' ],
+              cipher: ['aes128-gcm@openssh.com'],
               mac: [],
-              compress: [ 'none' ],
+              compress: ['none'],
               lang: [],
             },
           });
@@ -1002,11 +1004,11 @@ const setup = setupSimple.bind(undefined, debug);
     {
       client: {
         ...clientCfg,
-        algorithms: { compress: [ 'zlib' ] },
+        algorithms: { compress: ['zlib'] },
       },
       server: {
         ...serverCfg,
-        algorithms: { compress: [ 'zlib' ] },
+        algorithms: { compress: ['zlib'] },
       }
     },
   );
@@ -1038,7 +1040,7 @@ const setup = setupSimple.bind(undefined, debug);
         nb += data.length;
       })).on('end', mustCall(() => {
         assert(nb === (chunkCount * chunk.length),
-               `Wrong stream byte count: ${nb}`);
+          `Wrong stream byte count: ${nb}`);
         client.end();
       }));
     }));
@@ -1053,7 +1055,7 @@ const setup = setupSimple.bind(undefined, debug);
         ...clientCfg,
         debug: mustCallAtLeast((msg) => {
           assert(typeof msg === 'string',
-                 `Wrong debug argument type: ${typeof msg}`);
+            `Wrong debug argument type: ${typeof msg}`);
           assert(msg.length > 0, 'Unexpected empty debug message');
         }),
       },
@@ -1061,7 +1063,7 @@ const setup = setupSimple.bind(undefined, debug);
         ...serverCfg,
         debug: mustCallAtLeast((msg) => {
           assert(typeof msg === 'string',
-                 `Wrong debug argument type: ${typeof msg}`);
+            `Wrong debug argument type: ${typeof msg}`);
           assert(msg.length > 0, 'Unexpected empty debug message');
         }),
       },
@@ -1075,7 +1077,7 @@ const setup = setupSimple.bind(undefined, debug);
       conn.on('session', mustCall((accept, reject) => {
         accept().on('exec', mustCall((accept, reject, info) => {
           assert(info.command === 'foo --bar',
-                 `Wrong exec command: ${info.command}`);
+            `Wrong exec command: ${info.command}`);
           const stream = accept();
           stream.exit(100);
           stream.end();
@@ -1125,13 +1127,13 @@ const setup = setupSimple.bind(undefined, debug);
         headers: { Connection: 'close' },
       }, (res) => {
         assert(res.statusCode === 200,
-               `Wrong http status code: ${res.statusCode}`);
+          `Wrong http status code: ${res.statusCode}`);
         let buf = '';
         res.on('data', mustCallAtLeast((chunk) => {
           buf += chunk;
         })).on('end', mustCall(() => {
           assert(buf === 'hello world!',
-                 `Wrong http response body: ${inspect(buf)}`);
+            `Wrong http response body: ${inspect(buf)}`);
         }));
       });
     });
@@ -1144,7 +1146,7 @@ const setup = setupSimple.bind(undefined, debug);
       conn.on('tcpip', mustCall((accept, reject, info) => {
         assert(info.destIP === 'localhost', `Wrong destIP: ${info.destIP}`);
         assert(info.destPort === httpServer.address().port,
-               `Wrong destPort: ${info.destPort}`);
+          `Wrong destPort: ${info.destPort}`);
         assert(info.srcIP === 'localhost', `Wrong srcIP: ${info.srcIP}`);
 
         const stream = accept();
@@ -1192,13 +1194,13 @@ const setup = setupSimple.bind(undefined, debug);
         ca: fixture('https_cert.pem'),
       }, (res) => {
         assert(res.statusCode === 200,
-               `Wrong http status code: ${res.statusCode}`);
+          `Wrong http status code: ${res.statusCode}`);
         let buf = '';
         res.on('data', mustCallAtLeast((chunk) => {
           buf += chunk;
         })).on('end', mustCall(() => {
           assert(buf === 'hello world!',
-                 `Wrong http response body: ${inspect(buf)}`);
+            `Wrong http response body: ${inspect(buf)}`);
         }));
       }).on('error', (err) => {
         // This workaround is necessary for some reason on node < v14.x
@@ -1215,7 +1217,7 @@ const setup = setupSimple.bind(undefined, debug);
       conn.on('tcpip', mustCall((accept, reject, info) => {
         assert(info.destIP === 'localhost', `Wrong destIP: ${info.destIP}`);
         assert(info.destPort === httpsServer.address().port,
-               `Wrong destPort: ${info.destPort}`);
+          `Wrong destPort: ${info.destPort}`);
         assert(info.srcIP === 'localhost', `Wrong srcIP: ${info.srcIP}`);
 
         const stream = accept();
@@ -1228,7 +1230,8 @@ const setup = setupSimple.bind(undefined, debug);
 }
 
 [
-  { desc: 'remove/append/prepend (regexps)',
+  {
+    desc: 'remove/append/prepend (regexps)',
     config: {
       remove: /.*/,
       append: /gcm/,
@@ -1244,11 +1247,12 @@ const setup = setupSimple.bind(undefined, debug);
       'aes256-gcm',
     ],
   },
-  { desc: 'remove/append/prepend (strings)',
+  {
+    desc: 'remove/append/prepend (strings)',
     config: {
       remove: /.*/,
       append: 'aes256-ctr',
-      prepend: [ 'aes256-gcm@openssh.com', 'aes128-gcm@openssh.com' ],
+      prepend: ['aes256-gcm@openssh.com', 'aes128-gcm@openssh.com'],
     },
     expected: [
       'aes256-gcm@openssh.com',
@@ -1298,13 +1302,13 @@ const setup = setupSimple.bind(undefined, debug);
     },
   );
 
-  const badServer = net.createServer((s) => {});
+  const badServer = net.createServer((s) => { });
   badServer.listen(0, 'localhost', mustCall(() => {
     badServer.unref();
 
     client.on('error', mustCallAtLeast((err) => {
       client.end();
-    })).on('ready', mustNotCall()).on('close', mustCall(() => {}));
+    })).on('ready', mustNotCall()).on('close', mustCall(() => { }));
     client.connect({
       host: 'localhost',
       port: badServer.address().port,
@@ -1331,7 +1335,7 @@ const setup = setupSimple.bind(undefined, debug);
   })).listen(0, 'localhost', mustCall(() => {
     client.on('error', mustCall((err) => {
       client.end();
-    })).on('ready', mustNotCall()).on('close', mustCall(() => {}));
+    })).on('ready', mustNotCall()).on('close', mustCall(() => { }));
     client.connect({
       host: 'localhost',
       port: badServer.address().port,
@@ -1380,13 +1384,13 @@ const setup = setupSimple.bind(undefined, debug);
         );
         accept(assignedPort);
         conn.forwardOut(info.bindAddr,
-                        assignedPort,
-                        'remote',
-                        12345,
-                        mustCall((err, ch) => {
-          assert(err, 'Should receive error');
-          client.end();
-        }));
+          assignedPort,
+          'remote',
+          12345,
+          mustCall((err, ch) => {
+            assert(err, 'Should receive error');
+            client.end();
+          }));
       }));
     }));
   }));
@@ -1400,7 +1404,8 @@ const setup = setupSimple.bind(undefined, debug);
   })).on('tcp connection', mustCall((details, accept, reject) => {
     assert.deepStrictEqual(
       details,
-      { destIP: 'good',
+      {
+        destIP: 'good',
         destPort: assignedPort,
         srcIP: 'remote',
         srcPort: 12345
@@ -1452,7 +1457,7 @@ const setup = setupSimple.bind(undefined, debug);
     conn.on('session', mustCall((accept, reject) => {
       accept().on('exec', mustCall((accept, reject, info) => {
         assert(info.command === 'uptime',
-               `Wrong exec command: ${info.command}`);
+          `Wrong exec command: ${info.command}`);
         client.end();
       }));
     }));
@@ -1631,7 +1636,7 @@ if (mldsaSupported) {
   {
     // Generate a hybrid key pair used by both client and server in this test.
     const { generateKeyPairSync } = require('crypto');
-    const edKeys    = generateKeyPairSync('ed25519');
+    const edKeys = generateKeyPairSync('ed25519');
     const mldsaKeys = generateKeyPairSync('ml-dsa-65');
     const hybridKey = createHybridKey(edKeys, mldsaKeys);
 
@@ -1675,7 +1680,7 @@ if (mldsaSupported) {
         assert(verified === true, 'Hybrid signature verification failed');
         ctx.accept();
 
-      // 3 calls: 'none' auth rejected + probe accepted + full request accepted
+        // 3 calls: 'none' auth rejected + probe accepted + full request accepted
       }, 3)).on('ready', mustCall(() => {
         conn.on('session', mustCall((accept) => {
           const session = accept();
@@ -1733,13 +1738,111 @@ if (mldsaSupported) {
       // Called for 'none' auth and for publickey probe — always reject
       conn.on('authentication', mustCallAtLeast((ctx) => {
         ctx.reject();
-      })).on('ready', mustNotCall()).on('close', mustCall(() => {}));
+      })).on('ready', mustNotCall()).on('close', mustCall(() => { }));
     }));
 
     client.on('ready', mustNotCall())
       .on('error', mustCall((err) => {
         assert(/all configured/i.test(err.message), `Wrong error: ${err.message}`);
       }))
-      .on('close', mustCall(() => {}));
+      .on('close', mustCall(() => { }));
+  }
+
+
+}
+
+// NOTE: Full hybrid post-quantum suite — hybrid PQ/T KEX
+// (mlkem768x25519-sha256) combined with hybrid PQ public-key auth
+// (ssh-ed25519-ml-dsa-65).
+if (mlkemSupported && mldsaSupported) {
+  {
+    // Hybrid key pair used by both client and server for authentication.
+    const { generateKeyPairSync } = require('crypto');
+    const edKeys = generateKeyPairSync('ed25519');
+    const mldsaKeys = generateKeyPairSync('ml-dsa-65');
+    const hybridKey = createHybridKey(edKeys, mldsaKeys);
+
+    const { client, server } = setup_(
+      'should work with full hybrid PQ suite (mlkem768x25519-sha256 KEX '
+      + '+ ssh-ed25519-ml-dsa-65 auth)',
+      {
+        client: {
+          username: 'foo',
+          privateKey: hybridKey,
+          algorithms: { kex: ['mlkem768x25519-sha256'] },
+        },
+        server: {
+          ...serverCfg,
+          algorithms: { kex: ['mlkem768x25519-sha256'] },
+        },
+      },
+    );
+
+    const execCommand = 'echo "hello, world!"';
+    const successfulExit = 0;
+
+    server.on('connection', mustCall((conn) => {
+      conn.on('authentication', mustCall((ctx) => {
+        if (ctx.method !== 'publickey')
+          return ctx.reject();
+
+        assert.strictEqual(
+          ctx.key.algo,
+          'ssh-ed25519-ml-dsa-65',
+          `Wrong key algorithm: ${ctx.key.algo}`
+        );
+
+        if (!ctx.signature) {
+          // Probe: check if the public key is recognised
+          const clientPub = ctx.key.data;
+          const serverPub = hybridKey.getPublicSSH();
+          if (clientPub.equals(serverPub))
+            return ctx.accept();
+          return ctx.reject();
+        }
+
+        // Full request: verify the hybrid signature
+        const parsedKey = createHybridKey(edKeys, mldsaKeys);
+        const verified = parsedKey.verify(ctx.blob, ctx.signature);
+        assert(verified === true, 'Hybrid signature verification failed');
+        ctx.accept();
+
+        // 3 calls: 'none' auth rejected + probe accepted + full request accepted
+      }, 3)).on('ready', mustCall(() => {
+        conn.on('session', mustCall((accept) => {
+          const session = accept();
+          session.on('exec', mustCall((accept, reject, info) => {
+            assert.strictEqual(
+              info.command,
+              execCommand,
+              `Wrong exec command: ${info.command}`
+            );
+            const stream = accept();
+            stream.exit(successfulExit);
+            stream.end();
+          }));
+        }));
+      }));
+    }));
+
+    let handshakeComplete = false;
+
+    client.on('handshake', mustCall((info) => {
+      assert.strictEqual(
+        info.kex,
+        'mlkem768x25519-sha256',
+        `Wrong KEX algorithm: ${info.kex}`
+      );
+      handshakeComplete = true;
+    })).on('ready', mustCall(() => {
+      assert(handshakeComplete, 'handshake should complete before ready');
+      client.exec(execCommand, mustCall((err, stream) => {
+        assert(!err, `Unexpected exec error: ${err}`);
+        stream.on('exit', mustCall((code) => {
+          assert.strictEqual(code, successfulExit, `Wrong exit code: ${code}`);
+          client.end();
+        })).resume();
+      }));
+    }));
   }
 }
